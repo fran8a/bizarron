@@ -14,6 +14,7 @@ const {
   Vertices,
 } = Matter;
 const RADIUS = 21;
+const MAX_BALLS = 30;
 const STEP = 1000 / 120;
 const GRAVITY = 0.00115;
 const BALL_CATEGORY = 1;
@@ -357,6 +358,16 @@ export default function GuideBalls({
     };
     runtime.current = {
       launch: () => {
+        if (balls.length >= MAX_BALLS) {
+          // Retire the physics body as well as its DOM node. Never remove a
+          // ball that a pointer is holding, or leave its constraint behind.
+          const index = balls.findIndex(
+            (ball) => ![...drags.values()].some((drag) => drag.ball === ball),
+          );
+          if (index < 0) return;
+          const [oldest] = balls.splice(index, 1);
+          Composite.remove(engine.world, oldest.body);
+        }
         const source = center(".home .nav-link", {
           x: innerWidth - 100,
           y: 40,
