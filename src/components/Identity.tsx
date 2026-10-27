@@ -46,8 +46,15 @@ export function SocialLinks() {
 }
 export function Logo() {
   return (
-    <Link to="/" className="logo" aria-label="Bizarrón, inicio">
-      Bizarrón<span>®</span>
+    <Link to="/" className="logo brand-logo" aria-label="Bizarrón, inicio">
+      <img
+        src="/favicon.png?v=bizarron"
+        alt=""
+        aria-hidden="true"
+        width="56"
+        height="56"
+      />
+      izarrón
     </Link>
   );
 }

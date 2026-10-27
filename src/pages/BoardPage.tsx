@@ -61,6 +61,11 @@ export default function BoardPage({
     [saving, setSaving] = useState(false);
   const [pendingFill, setPendingFill] = useState<Player[]>([]);
   const [pendingRemoval, setPendingRemoval] = useState<Set<string>>(new Set());
+  const visibleError = [localError, board.error].find(
+    (message) =>
+      message &&
+      !message.includes("Otro participante está moviendo este jugador."),
+  );
   const savedIds = new Set(board.data?.players.map((p) => p.id));
   const visiblePlayers = [
     ...(board.data?.players ?? []).filter((p) => !pendingRemoval.has(p.id)),
@@ -644,10 +649,10 @@ export default function BoardPage({
           </button>
         </div>
       </header>
-      {(board.error || localError) && (
+      {visibleError && (
         <div className="error-banner" role="alert">
           <AlertCircle size={17} />
-          <span>{localError || board.error}</span>
+          <span>{visibleError}</span>
           <button className="text-button" onClick={() => void board.refresh()}>
             Actualizar datos
           </button>

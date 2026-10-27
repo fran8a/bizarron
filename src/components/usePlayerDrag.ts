@@ -7,6 +7,7 @@ import {
 } from "react";
 import type Konva from "konva";
 import type { KonvaEventObject } from "konva/lib/Node";
+import { createPositionSmoother } from "../lib/positionSmoother";
 import {
   outsideField,
   pitchGeometry,
@@ -79,19 +80,47 @@ export function usePlayerDrag(
   const lastDrag = useRef(-Infinity);
   const shade = useRef<boolean | null>(null);
   const [dragOutside, setDragOutside] = useState<boolean | null>(null);
+  const smoother = useRef<ReturnType<typeof createPositionSmoother> | null>(
+    null,
+  );
+  const previous = useRef<Options | null>(null);
 
   useLayoutEffect(() => {
+    if (!smoother.current)
+      smoother.current = createPositionSmoother((position) => {
+        node.current?.position(position);
+        latest.current.onPositionChange?.(position);
+      });
+    const motion = smoother.current;
     const g = gesture.current;
-    const position = g?.active && g.local ? g.local : options.position;
-    node.current?.position(position);
-    options.onPositionChange?.(position);
+    const old = previous.current;
+    const resized =
+      !old ||
+      old.width !== options.width ||
+      old.height !== options.height ||
+      old.horizontal !== options.horizontal ||
+      old.player.id !== options.player.id;
+    if (g?.active && g.local) motion.snap(g.local);
+    else if (
+      resized ||
+      old.position.x !== options.position.x ||
+      old.position.y !== options.position.y
+    ) {
+      if (!resized && (options.lock || old.lock)) motion.move(options.position);
+      else motion.snap(options.position);
+    }
+    // React may have written the received target into the Konva node. Restore
+    // the painted position before the browser draws, even on unrelated renders.
+    motion.draw();
+    previous.current = options;
   });
+
+  useEffect(() => () => smoother.current?.stop(), []);
 
   useEffect(() => {
     mounted.current = true;
     const reposition = (position: Point) => {
-      node.current?.position(position);
-      latest.current.onPositionChange?.(position);
+      smoother.current?.snap(position);
     };
     const color = (value: boolean | null) => {
       if (mounted.current && shade.current !== value) {
@@ -207,7 +236,7 @@ export function usePlayerDrag(
         n.position(previousPosition);
       }
       g.local = n.position();
-      current.onPositionChange?.(g.local);
+      smoother.current?.snap(g.local);
       color(outsideField(point(n, current)));
       n.getStage()!.container().style.cursor = "grabbing";
       if (starting) {
@@ -286,6 +315,7 @@ export function usePlayerDrag(
     )
       return;
     const capture = e.target instanceof Element ? e.target : null;
+    smoother.current?.snap(n.position());
     capture?.setPointerCapture(e.pointerId);
     gesture.current = {
       pointerId: e.pointerId,

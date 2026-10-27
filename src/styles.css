@@ -74,12 +74,12 @@ button svg {
   vertical-align: top;
   margin: 3px 0 0 5px;
 }
-.home-header .home-logo {
+.brand-logo {
   display: inline-flex;
   align-items: center;
   flex-shrink: 0;
 }
-.home-logo img {
+.brand-logo img {
   display: block;
   width: 1.1em;
   height: 1.1em;

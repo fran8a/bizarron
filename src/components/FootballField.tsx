@@ -389,6 +389,18 @@ export default function FootballField(props: Props) {
               })}
           </Layer>
           <Layer>
+            {props.players.map((player, index) => (
+              <Token
+                key={player.id}
+                player={player}
+                colors={colors}
+                width={width}
+                height={height}
+                index={index}
+                {...props}
+                onTokenPosition={moveRouteOrigin}
+              />
+            ))}
             <Group
               ref={ballNode}
               name="ball"
@@ -448,18 +460,6 @@ export default function FootballField(props: Props) {
                 );
               })}
             </Group>
-            {props.players.map((player, index) => (
-              <Token
-                key={player.id}
-                player={player}
-                colors={colors}
-                width={width}
-                height={height}
-                index={index}
-                {...props}
-                onTokenPosition={moveRouteOrigin}
-              />
-            ))}
           </Layer>
         </Stage>
       </div>
