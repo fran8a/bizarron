@@ -93,6 +93,7 @@ export function fieldDrop(
   rect: { left: number; top: number; width: number; height: number },
   horizontal: boolean,
   marginMultiplier = 1,
+  inverted = false,
 ) {
   const pitch = pitchGeometry(
     rect.width,
@@ -113,6 +114,7 @@ export function fieldDrop(
     (clientX - rect.left - pitch.left) / pitch.width,
     (clientY - rect.top - pitch.top) / pitch.heightInside,
     horizontal,
+    inverted,
   );
 }
 export function pitchGeometry(
@@ -206,13 +208,28 @@ export function lateralBenchPosition(
     y: clamp(position.y),
   };
 }
-export function toScreen(x: number, y: number, horizontal: boolean) {
-  return horizontal ? { x: y, y: 1 - x } : { x, y };
+export function toScreen(
+  x: number,
+  y: number,
+  horizontal: boolean,
+  inverted = false,
+) {
+  const point = horizontal ? { x: y, y: 1 - x } : { x, y };
+  return inverted ? { x: 1 - point.x, y: 1 - point.y } : point;
 }
-export function fromScreen(x: number, y: number, horizontal: boolean) {
-  return horizontal
-    ? { x: clamp(1 - y), y: clamp(x) }
-    : { x: clamp(x), y: clamp(y) };
+export function fromScreen(
+  x: number,
+  y: number,
+  horizontal: boolean,
+  inverted = false,
+  clampCoordinates = true,
+) {
+  if (inverted) {
+    x = 1 - x;
+    y = 1 - y;
+  }
+  const point = horizontal ? { x: 1 - y, y: x } : { x, y };
+  return clampCoordinates ? { x: clamp(point.x), y: clamp(point.y) } : point;
 }
 export function validPlayer(name: string, number: number) {
   return (

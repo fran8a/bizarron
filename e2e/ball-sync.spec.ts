@@ -95,9 +95,13 @@ test("pelota única: movimiento en vivo entre sesiones, guardado, recarga e hist
     await other.mouse.move(to.x, to.y, { steps: 10 });
     await other.mouse.up();
     await expect.poll(() => ballAt(page, 0.65, 0.7)).toBe(true);
-    await page.getByRole("switch", { name: "Cancha horizontal" }).click();
+    await page.getByRole("button", { name: "Girar cancha" }).click();
     await expect.poll(() => ballAt(page, 0.7, 0.35)).toBe(true);
-    await page.getByRole("switch", { name: "Cancha horizontal" }).click();
+    await page.getByRole("button", { name: "Girar cancha" }).click();
+    await expect.poll(() => ballAt(page, 0.35, 0.3)).toBe(true);
+    await page.getByRole("button", { name: "Girar cancha" }).click();
+    await expect.poll(() => ballAt(page, 0.3, 0.65)).toBe(true);
+    await page.getByRole("button", { name: "Girar cancha" }).click();
     await expect.poll(() => ballAt(page, 0.65, 0.7)).toBe(true);
     // Move the ball synchronously in parallel with tactical play execution.
     await page

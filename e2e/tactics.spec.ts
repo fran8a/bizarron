@@ -258,9 +258,12 @@ test("jugadas: edición colaborativa, conflicto, reproducción local sin escritu
     await page.clock.runFor(32);
     await expect.poll(() => orangeAt(page, a)).toBe(true);
     await page.clock.resume();
-    const toggle = page.getByRole("switch", { name: "Cancha horizontal" });
+    const toggle = page.getByRole("button", { name: "Girar cancha" });
     await toggle.click();
-    await expect(toggle).toHaveAttribute("aria-checked", "true");
+    await expect(page.locator(".field-wrap")).toHaveAttribute(
+      "data-horizontal",
+      "true",
+    );
     expect((await get()).tactics).toEqual(before.tactics);
     await toggle.click();
     await page
@@ -396,7 +399,7 @@ test("jugadas táctiles: puntos editables y sidebar fija con scroll en dos colum
     const player = (await get()).players[0];
     const sidebarHeight = (await page.locator(".sidebar").boundingBox())!
       .height;
-    await page.getByRole("switch", { name: "Cancha horizontal" }).tap();
+    await page.getByRole("button", { name: "Girar cancha" }).tap();
     await page
       .getByRole("button", { name: "Preparar jugada", exact: true })
       .tap();

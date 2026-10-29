@@ -111,14 +111,20 @@ export default function BoardPage({
   useEffect(() => {
     setToolsOpen(false);
   }, [mobile, board.selection]);
-  const [preferredHorizontal, setHorizontal] = useState(() => {
+  const [pitchTurns, setPitchTurns] = useState(() => {
     try {
-      return localStorage.getItem("bizarron.pitch-horizontal.v1") === "true";
+      const saved = localStorage.getItem("bizarron.pitch-turns.v1");
+      if (saved !== null && /^[0-3]$/.test(saved)) return Number(saved);
+      return localStorage.getItem("bizarron.pitch-horizontal.v1") === "true"
+        ? 1
+        : 0;
     } catch {
-      return false;
+      return 0;
     }
   });
-  const horizontal = !mobile && preferredHorizontal;
+  const viewTurns = mobile ? 0 : pitchTurns % 4;
+  const horizontal = viewTurns % 2 === 1;
+  const inverted = viewTurns >= 2;
   const fieldRef = useRef<HTMLDivElement>(null);
   const links = useRef(new Map<string, Promise<string>>());
   function formationLink(formation: string) {
@@ -222,6 +228,7 @@ export default function BoardPage({
       canvas.getBoundingClientRect(),
       horizontal,
       horizontal ? 2 : 1,
+      inverted,
     );
   }
   async function quickAdd(addition: {
@@ -691,27 +698,21 @@ export default function BoardPage({
                 <button
                   type="button"
                   className="orientation-switch"
-                  role="switch"
-                  aria-label="Cancha horizontal"
-                  aria-checked={horizontal}
+                  aria-label="Girar cancha"
                   disabled={
                     palettePending ||
                     data.locks.some(
                       (lock) => Date.parse(lock.expires_at) > board.now,
                     )
                   }
-                  title={
-                    horizontal
-                      ? "Girar cancha a vertical"
-                      : "Girar cancha a horizontal"
-                  }
+                  title="Girar cancha 90 grados"
                   onClick={() => {
-                    const next = !horizontal;
-                    setHorizontal(next);
+                    const next = pitchTurns + 1;
+                    setPitchTurns(next);
                     try {
                       localStorage.setItem(
-                        "bizarron.pitch-horizontal.v1",
-                        String(next),
+                        "bizarron.pitch-turns.v1",
+                        String(next % 4),
                       );
                     } catch {
                       /* The view remains usable when storage is unavailable. */
@@ -719,7 +720,10 @@ export default function BoardPage({
                   }}
                 >
                   <span className="orientation-icon" aria-hidden="true">
-                    <span className="orientation-device">
+                    <span
+                      className="orientation-device"
+                      style={{ transform: `rotate(${-pitchTurns * 90}deg)` }}
+                    >
                       <Smartphone size={18} />
                     </span>
                     <RotateCw className="orientation-arrow" size={12} />
@@ -766,6 +770,7 @@ export default function BoardPage({
                   onWaypointChange={tacticEditor.move}
                   playersPerTeam={data.board.players_per_team}
                   horizontal={horizontal}
+                  inverted={inverted}
                   locks={data.locks}
                   people={board.people}
                   now={board.now}

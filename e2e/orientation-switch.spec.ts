@@ -18,12 +18,17 @@ test("switch de orientación conserva la vista y ajusta la cancha en desktop y m
   await expect(page.locator(".connection")).toHaveText("Conectado", {
     timeout: 30000,
   });
-  const toggle = page.getByRole("switch", { name: "Cancha horizontal" });
-  await expect(toggle).toHaveAttribute("aria-checked", "false");
+  const toggle = page.getByRole("button", { name: "Girar cancha" });
+  await expect(page.locator(".field-wrap")).toHaveAttribute(
+    "data-horizontal",
+    "false",
+  );
   const canvas = page.locator(".field-wrap canvas").first();
-  const vertical = (await canvas.boundingBox())!;
   await toggle.click();
-  await expect(toggle).toHaveAttribute("aria-checked", "true");
+  await expect(page.locator(".field-wrap")).toHaveAttribute(
+    "data-horizontal",
+    "true",
+  );
   const margins = await page.locator(".field-wrap").evaluate((el) => {
     const field = el as HTMLElement;
     const width = Number(field.dataset.pitchWidth);
@@ -51,11 +56,30 @@ test("switch de orientación conserva la vista y ajusta la cancha en desktop y m
       return box.width / box.height;
     })
     .toBeGreaterThan(1.3);
-  expect((await canvas.boundingBox())!.width).toBeGreaterThan(vertical.width);
+  // Continue the same turn through all four sides before restoring horizontal.
+  for (const [horizontal, inverted] of [
+    [false, true],
+    [true, true],
+    [false, false],
+    [true, false],
+  ]) {
+    await toggle.click();
+    await expect(page.locator(".field-wrap")).toHaveAttribute(
+      "data-horizontal",
+      String(horizontal),
+    );
+    await expect(page.locator(".field-wrap")).toHaveAttribute(
+      "data-inverted",
+      String(inverted),
+    );
+  }
   await page.reload();
-  await expect(toggle).toHaveAttribute("aria-checked", "true");
+  await expect(page.locator(".field-wrap")).toHaveAttribute(
+    "data-horizontal",
+    "true",
+  );
   await page.setViewportSize({ width: 390, height: 844 });
-  await expect(toggle).toBeInViewport();
+  await expect(toggle).toHaveCount(0);
   for (const [width, height] of [
     [390, 844],
     [844, 390],
@@ -74,14 +98,21 @@ test("switch de orientación conserva la vista y ajusta la cancha en desktop y m
       )
       .toBe(true);
   }
-  await page.setViewportSize({ width: 390, height: 844 });
+  await page.setViewportSize({ width: 1366, height: 768 });
   await toggle.focus();
   await page.keyboard.press("Space");
-  await expect(toggle).toHaveAttribute("aria-checked", "false");
+  await expect(page.locator(".field-wrap")).toHaveAttribute(
+    "data-horizontal",
+    "false",
+  );
   await expect
     .poll(async () => {
-      const box = (await canvas.boundingBox())!;
-      return box.height > box.width;
+      return page.locator(".field-wrap").evaluate((el) => {
+        const field = el as HTMLElement;
+        return (
+          Number(field.dataset.pitchHeight) > Number(field.dataset.pitchWidth)
+        );
+      });
     })
     .toBe(true);
   expect(

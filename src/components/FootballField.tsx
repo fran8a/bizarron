@@ -16,6 +16,7 @@ import { usePitchColors, type PitchColors } from "./usePitchColors";
 import { usePlayerDrag, type DragCallbacks } from "./usePlayerDrag";
 import {
   toScreen,
+  fromScreen,
   pitchGeometry,
   constrainPlayerPosition,
   lateralBenchPosition,
@@ -31,6 +32,7 @@ type Props = DragCallbacks & {
   ball: Ball;
   playersPerTeam: 7 | 11;
   horizontal: boolean;
+  inverted?: boolean;
   locks: Lease[];
   people: Participant[];
   now: number;
@@ -100,7 +102,7 @@ export default function FootballField(props: Props) {
   const { scale, height, apron } = geometry;
   const line = colors.line;
   const screenPoint = (point: TacticalPoint) => {
-    const p = toScreen(point.x, point.y, props.horizontal);
+    const p = toScreen(point.x, point.y, props.horizontal, props.inverted);
     return {
       x: geometry.left + p.x * geometry.width,
       y: geometry.top + p.y * geometry.heightInside,
@@ -112,7 +114,7 @@ export default function FootballField(props: Props) {
       0,
       Math.min(1, (y - geometry.top) / geometry.heightInside),
     );
-    return props.horizontal ? { x: 1 - sy, y: sx } : { x: sx, y: sy };
+    return fromScreen(sx, sy, props.horizontal, props.inverted);
   };
   const routePlayers = props.routePlayers ?? props.players;
   // Include the outline in the bounds so the entire ball stays on the pitch.
@@ -143,6 +145,7 @@ export default function FootballField(props: Props) {
     width,
     height,
     horizontal: props.horizontal,
+    inverted: props.inverted,
     position: ballDisplay,
     canEnterField: true,
     enabled: props.enabled && !props.preparing,
@@ -157,6 +160,7 @@ export default function FootballField(props: Props) {
       className="field-wrap"
       ref={box}
       data-horizontal={props.horizontal}
+      data-inverted={!!props.inverted}
       data-preparing={!!props.preparing}
       data-pitch-left={geometry.left}
       data-pitch-top={geometry.top}
@@ -522,7 +526,12 @@ function Token({
     height,
   );
   const { left, top, width: w, heightInside: h } = geometry;
-  const fieldPosition = toScreen(player.x, player.y, props.horizontal);
+  const fieldPosition = toScreen(
+    player.x,
+    player.y,
+    props.horizontal,
+    props.inverted,
+  );
   const storedOutside =
     player.outside_x != null && player.outside_y != null
       ? { x: player.outside_x, y: player.outside_y }
@@ -536,7 +545,12 @@ function Token({
   // Canonical left/right sidelines become bottom/top when the pitch rotates.
   const position =
     player.placement === "bench"
-      ? toScreen(benchPosition.x, benchPosition.y, props.horizontal)
+      ? toScreen(
+          benchPosition.x,
+          benchPosition.y,
+          props.horizontal,
+          props.inverted,
+        )
       : fieldPosition;
   const rawDisplay = { x: left + position.x * w, y: top + position.y * h };
   const display =
@@ -548,6 +562,7 @@ function Token({
     width,
     height,
     horizontal: props.horizontal,
+    inverted: props.inverted,
     position: display,
     canEnterField:
       props.players.filter(

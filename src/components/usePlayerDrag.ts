@@ -10,6 +10,7 @@ import type { KonvaEventObject } from "konva/lib/Node";
 import { createPositionSmoother } from "../lib/positionSmoother";
 import {
   outsideField,
+  fromScreen,
   pitchGeometry,
   constrainPlayerPosition,
   type Lease,
@@ -33,6 +34,7 @@ type Options = DragCallbacks & {
   width: number;
   height: number;
   horizontal: boolean;
+  inverted?: boolean;
   position: Point;
   canEnterField: boolean;
   enabled: boolean;
@@ -64,7 +66,7 @@ function point(node: Konva.Group, options: Options): Point {
   );
   const x = (node.x() - g.left) / g.width;
   const y = (node.y() - g.top) / g.heightInside;
-  return options.horizontal ? { x: 1 - y, y: x } : { x, y };
+  return fromScreen(x, y, options.horizontal, options.inverted, false);
 }
 
 /** Paint locally on pointer input; only broadcast or persist after owning the lease. */
@@ -99,6 +101,7 @@ export function usePlayerDrag(
       old.width !== options.width ||
       old.height !== options.height ||
       old.horizontal !== options.horizontal ||
+      old.inverted !== options.inverted ||
       old.player.id !== options.player.id;
     if (g?.active && g.local) motion.snap(g.local);
     else if (

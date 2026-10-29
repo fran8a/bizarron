@@ -21,7 +21,7 @@ test("mobile prioritizes vertical pitch, quick add and accessible sliding option
     "false",
   );
   await expect(
-    page.getByRole("switch", { name: "Cancha horizontal" }),
+    page.getByRole("button", { name: "Girar cancha" }),
   ).toHaveCount(0);
   await expect(page.locator(".sidebar")).toHaveCount(0);
   expect(
@@ -74,7 +74,7 @@ test("mobile prioritizes vertical pitch, quick add and accessible sliding option
   await pc.goto("/p/tttttttttttttttttttttttttttttttt");
   await expect(pc.locator(".sidebar")).toBeVisible();
   await expect(
-    pc.getByRole("switch", { name: "Cancha horizontal" }),
+    pc.getByRole("button", { name: "Girar cancha" }),
   ).toBeChecked();
   await expect(pc.locator(".mobile-board-actions")).toHaveCount(0);
   await desktop.close();

@@ -249,7 +249,7 @@ test("pizarra: colores de canvas, formularios, jugadas y navegación en ambos te
     await page.getByRole("button", { name: "Reiniciar jugada" }).click();
   }
   expect(grass[0]).not.toEqual(grass[1]);
-  await page.getByRole("switch", { name: "Cancha horizontal" }).click();
+  await page.getByRole("button", { name: "Girar cancha" }).click();
   await expect(page.locator(".field-wrap")).toHaveAttribute(
     "data-horizontal",
     "true",

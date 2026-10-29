@@ -20,7 +20,7 @@ test("el encabezado transparente no intercepta el arrastre de suplentes arriba",
   await expect(page.locator(".connection")).toHaveText("Conectado", {
     timeout: 30000,
   });
-  await page.getByRole("switch", { name: "Cancha horizontal" }).click();
+  await page.getByRole("button", { name: "Girar cancha" }).click();
   const saved = await page.evaluate(() =>
     JSON.parse(
       localStorage.getItem(
@@ -88,8 +88,9 @@ test("el encabezado transparente no intercepta el arrastre de suplentes arriba",
       { x: back.x + back.width / 2, y: back.y + back.height / 2 },
     ),
   ).toBe(true);
-  await page.getByRole("switch", { name: "Cancha horizontal" }).click();
-  await expect(
-    page.getByRole("switch", { name: "Cancha horizontal" }),
-  ).toHaveAttribute("aria-checked", "false");
+  await page.getByRole("button", { name: "Girar cancha" }).click();
+  await expect(page.locator(".field-wrap")).toHaveAttribute(
+    "data-horizontal",
+    "false",
+  );
 });

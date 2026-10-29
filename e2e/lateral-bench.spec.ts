@@ -52,11 +52,17 @@ test("suplentes solo en laterales: límites superior/inferior y regreso a cancha
     .getByRole("button", { name: "Agregar jugador del equipo A", exact: true })
     .click();
   await expect(page.locator(".roster-player")).toHaveCount(1);
-  const screen = (p: { x: number; y: number }, horizontal: boolean) =>
-    horizontal ? { x: p.y, y: 1 - p.x } : p;
+  let inverted = false;
+  const screen = (p: { x: number; y: number }, horizontal: boolean) => {
+    const point = horizontal ? { x: p.y, y: 1 - p.x } : p;
+    return inverted ? { x: 1 - point.x, y: 1 - point.y } : point;
+  };
   for (const horizontal of [true, false]) {
-    const toggle = page.getByRole("switch", { name: "Cancha horizontal" });
-    if ((await toggle.getAttribute("aria-checked")) !== String(horizontal))
+    const toggle = page.getByRole("button", { name: "Girar cancha" });
+    if (
+      (await page.locator(".field-wrap").getAttribute("data-horizontal")) !==
+      String(horizontal)
+    )
       await toggle.click();
     await expect(page.locator(".field-wrap")).toHaveAttribute(
       "data-horizontal",
@@ -64,13 +70,19 @@ test("suplentes solo en laterales: límites superior/inferior y regreso a cancha
     );
     await expect
       .poll(async () => {
-        const box = (await page
-          .locator(".field-wrap canvas")
-          .first()
-          .boundingBox())!;
-        return horizontal ? box.width > box.height : box.height > box.width;
+        return page.locator(".field-wrap").evaluate((el) => {
+          const field = el as HTMLElement;
+          const width = Number(field.dataset.pitchWidth);
+          const height = Number(field.dataset.pitchHeight);
+          return field.dataset.horizontal === "true"
+            ? width > height
+            : height > width;
+        });
       })
       .toBe(true);
+    inverted =
+      (await page.locator(".field-wrap").getAttribute("data-inverted")) ===
+      "true";
     const drag = async (x: number, y: number) => {
       const p = (await get()).players[0];
       const origin = screen(

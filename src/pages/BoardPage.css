@@ -482,9 +482,6 @@
 .board-app .orientation-switch:hover .orientation-arrow {
   transform: rotate(45deg);
 }
-.board-app .orientation-switch[aria-checked="true"] .orientation-device {
-  transform: rotate(-90deg);
-}
 @media (prefers-reduced-motion: reduce) {
   .board-app .orientation-switch * {
     transition: none;
