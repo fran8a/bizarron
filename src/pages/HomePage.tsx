@@ -55,6 +55,18 @@ export default function Home() {
   }
   return (
     <div className="home">
+      <link rel="canonical" href="https://bizarron.app/" />
+      <script type="application/ld+json">
+        {JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "WebSite",
+          name: "Bizarrón",
+          url: "https://bizarron.app/",
+          inLanguage: "es-AR",
+          description:
+            "La pizarra de los pibes. Pizarra táctica de fútbol online para armar formaciones de fútbol 7 y 11 y compartir jugadas en tiempo real.",
+        })}
+      </script>
       <div className="home-layout" ref={layout}>
         <header className="home-header">
           <Logo />
@@ -84,8 +96,9 @@ export default function Home() {
                 <em>estrategia.</em>
               </h1>
               <p className="description">
-                Armá tu equipo, mové los jugadores y compartí la pizarra con los
-                pibes. Todos editan en tiempo real.
+                Armá formaciones de fútbol 7 y 11 en una pizarra táctica online.
+                Mové los jugadores y compartí la jugada con los pibes, en tiempo
+                real.
               </p>
               <button
                 className="primary hero-cta"
