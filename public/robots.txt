@@ -2,3 +2,5 @@ User-agent: *
 Allow: /
 Disallow: /p/
 Disallow: /board/
+
+Sitemap: https://bizarron.app/sitemap.xml
